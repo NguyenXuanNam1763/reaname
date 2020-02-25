@@ -29,6 +29,12 @@ public class Database  extends SQLiteOpenHelper {
         return  database.rawQuery(sql,null);
     }
 
+    public void insertInto(Images images){
+        String sql="insert into Images values(null,'"+images.getNewUri()+"','"+images.getNewName()+"','"+images.getOriginalUri()+"','"+images.getOriginalName()+"')";
+        SQLiteDatabase database=getWritableDatabase();
+        database.execSQL(sql);
+    }
+
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {

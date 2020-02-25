@@ -7,6 +7,10 @@ public class Images {
     private String originalUri;
     private String originalName;
 
+
+    public Images() {
+    }
+
     public Images(int id, String newUri, String newName, String originalUri, String originalName) {
         this.id = id;
         this.newUri = newUri;
