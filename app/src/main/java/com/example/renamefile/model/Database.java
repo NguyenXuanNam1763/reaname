@@ -23,15 +23,6 @@ public class Database  extends SQLiteOpenHelper {
         database.execSQL(sql);
     }
 
-    public void insert_images(String uri, byte[] image){
-        SQLiteDatabase database=getWritableDatabase();
-        String sql="insert into Images values(null,?,?)";
-        SQLiteStatement statement=database.compileStatement(sql);
-        statement.clearBindings();
-        statement.bindString(1,uri);
-        statement.bindBlob(2,image);
-        statement.executeInsert();
-    }
 
     public Cursor getData(String sql){
         SQLiteDatabase database=getReadableDatabase();

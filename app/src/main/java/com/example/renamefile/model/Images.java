@@ -2,13 +2,17 @@ package com.example.renamefile.model;
 
 public class Images {
     private int id;
-    private String uri;
-    private byte[] image;
+    private String newUri;
+    private String newName;
+    private String originalUri;
+    private String originalName;
 
-    public Images(int id, String uri, byte[] image) {
+    public Images(int id, String newUri, String newName, String originalUri, String originalName) {
         this.id = id;
-        this.uri = uri;
-        this.image = image;
+        this.newUri = newUri;
+        this.newName = newName;
+        this.originalUri = originalUri;
+        this.originalName = originalName;
     }
 
     public int getId() {
@@ -19,19 +23,35 @@ public class Images {
         this.id = id;
     }
 
-    public String getUri() {
-        return uri;
+    public String getNewUri() {
+        return newUri;
     }
 
-    public void setUri(String uri) {
-        this.uri = uri;
+    public void setNewUri(String newUri) {
+        this.newUri = newUri;
     }
 
-    public byte[] getImage() {
-        return image;
+    public String getNewName() {
+        return newName;
     }
 
-    public void setImage(byte[] image) {
-        this.image = image;
+    public void setNewName(String newName) {
+        this.newName = newName;
+    }
+
+    public String getOriginalUri() {
+        return originalUri;
+    }
+
+    public void setOriginalUri(String originalUri) {
+        this.originalUri = originalUri;
+    }
+
+    public String getOriginalName() {
+        return originalName;
+    }
+
+    public void setOriginalName(String originalName) {
+        this.originalName = originalName;
     }
 }

@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.renamefile.model.Images;
 
 import java.util.ArrayList;
@@ -40,8 +41,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.HomViewHolder>
     public void onBindViewHolder(@NonNull HomViewHolder holder, int position) {
         Images images=arrayList.get(position);
         if(images!=null){
-            Bitmap bitmap= BitmapFactory.decodeByteArray(images.getImage(),0,images.getImage().length);
-            holder.img_item.setImageBitmap(bitmap);
+//            Glide.with(context).load(images.getUri()).into(holder.img_item);
         }
     }
 

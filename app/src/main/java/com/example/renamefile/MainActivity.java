@@ -20,6 +20,7 @@ import android.graphics.Bitmap;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -37,6 +38,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 
 import butterknife.BindView;
@@ -44,12 +46,12 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 
-public class MainActivity extends AppCompatActivity {
+public class  MainActivity extends AppCompatActivity {
     SharedPreferences sharedPreferences;
     Database database;
     ArrayList<Images> arrayList;
     HomeAdapter homeAdapter;
-
+    public static File BASE_URI;
 
 
 
@@ -67,27 +69,45 @@ public class MainActivity extends AppCompatActivity {
     public void onPick(View view){
         Intent intent=new Intent();
         intent.setType("image/*");
-        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true);
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent,"Select Picture"),100);
+        intent.setAction(Intent.ACTION_PICK);
+//        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true);
+//        intent.setAction(Intent.ACTION_GET_CONTENT);
+//        startActivityForResult(Intent.createChooser(intent,"Select Picture"),100);
+        startActivityForResult(intent,100);
     }
     
     
     @OnClick(R.id.button2)
     public void onRename(View view){
         Toast.makeText(this, "ahihi", Toast.LENGTH_SHORT).show();
-        String uri=sharedPreferences.getString("uri","");
-        Log.e("uri_image", uri.toString());
-        String currentName = uri.substring(uri.lastIndexOf("/", uri.length()));
-        currentName = currentName.substring(1);
-        File directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "Camera");
-        File from = new File(directory, currentName);
-        File to = new File(directory, "xuannam".trim() + ".jpg");
-        from.renameTo(to);
+//        String uri=sharedPreferences.getString("uri","");
+//        Log.e("uri_image", uri.toString());
+//        String currentName = uri.substring(uri.lastIndexOf("/", uri.length()));
+//        currentName = currentName.substring(1);
+//        File directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "Namhihi");
+//        File from = new File(directory, currentName);
+//        File to = new File(directory, "xuannam".trim() + ".jpg");
+//        from.renameTo(to);
+
+//        File sd=Environment.getExternalStorageDirectory();
+//// File (or directory) to be moved
+//        String sourcePath="/DCIM/Camera/Getimage.jpg";
+//        File file = new File(sd,sourcePath);
+//// Destination directory
+//        boolean success = file.renameTo(new File(sd, "Getimage.jpg"));
+
+
+
+        String newFolder=createRandomFolder(BASE_URI);
+        if(newFolder!=null && newFolder.length()!=0){
+            String uri= (sharedPreferences.getString("uri",""));
+            moveFile(BASE_URI,newFolder,uri);
+        }
 
 
     }
 
+    String TAG="check_random";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
         arrayList=new ArrayList<>();
         ButterKnife.bind(this);
         database=new Database(this,"hideapp.sqlite",null,1);
-        String sql="create table if not exists Images(id integer primary key autoincrement, uri varchar(200), image blob)";
+        String sql="create table if not exists Images(id integer primary key autoincrement, newUri varchar(200), newName varchar(200),originalUri varchar(200), originalName varchar(200))";
         database.jquery(sql);
         homeAdapter=new HomeAdapter(this,arrayList);
         LinearLayoutManager linearLayoutManager=new LinearLayoutManager(this);
@@ -105,6 +125,11 @@ public class MainActivity extends AppCompatActivity {
         rcv.setLayoutManager(linearLayoutManager);
         rcv.setAdapter(homeAdapter);
         initList(database.getData("select * from Images"));
+        createFile();
+
+        BASE_URI=Environment.getExternalStorageDirectory();
+
+
 
 
 
@@ -122,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
         if(requestCode==1){
             if (grantResults[0]==PackageManager.PERMISSION_GRANTED){
 //                ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},2);
+
 
             }
         }
@@ -143,21 +169,11 @@ public class MainActivity extends AppCompatActivity {
 //            int count=data.getClipData().getItemCount();
 //            for(int i=0;i<count;i++){
                 Log.e("plepl","ajojo");
-                Uri uri=Uri.parse(FileUtils.getPath(MainActivity.this,data.getData()));
-                Log.e("uri_path",uri.toString());
-                try {
-                    InputStream inputStream=this.getContentResolver().openInputStream(uri);
-                    byte[] array=getByte(inputStream);
-                    database.insert_images(uri.toString(),array);
-                    initList(database.getData("select * from Images"));
-
-
-
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                sharedPreferences.edit().putString("uri",FileUtils.getPath(this,data.getData())).commit();
+//                Uri uri=Uri.parse(FileUtils.getPath(MainActivity.this,data.getData()));
+//                Log.e("uri_select",uri.toString());
+//                database.jquery("insert into Images values(null,'"+uri.toString()+"')");
+//                initList(database.getData("select * from Images"));
 
 //            }
 
@@ -179,12 +195,54 @@ public class MainActivity extends AppCompatActivity {
         arrayList.clear();
         while(cursor.moveToNext()){
             int id=cursor.getInt(0);
-            String uri=cursor.getString(1);
-            byte[] image=cursor.getBlob(2);
-            arrayList.add(new Images(id,uri,image));
+            String newUri=cursor.getString(1);
+            String newName=cursor.getString(2);
+            String originalUri=cursor.getString(3);
+            String originalName=cursor.getString(4);
+            arrayList.add(new Images(id,newUri,newName,originalUri,originalName));
             Log.e("id_ahihi",String.valueOf(id));
         }
         homeAdapter.notifyDataSetChanged();
 
     }
+    public void createFile(){
+        File folder=new File(Environment.getExternalStorageDirectory()+"/Android/data/com.example.renamefile/phone");
+
+        Boolean succes=true;
+        if(!folder.exists()){
+            succes=folder.mkdir();
+            BASE_URI=new File(Environment.getExternalStorageDirectory(),"/Android/data/com.example.renamefile/phone");
+        }
+        if(succes){
+            Toast.makeText(this, "ahihi", Toast.LENGTH_SHORT).show();
+        }
+    }
+    public String createRandomFolder(File BASE_URI){
+        final double min=10000000;
+        final double max=1000000000;
+        String random= String.valueOf((Math.random()*(max-min+1)+min));
+        String folder=random.substring(random.lastIndexOf(".")+1,random.length());
+        Log.d("kiemtra", folder);
+        File file=new File(Environment.getExternalStorageDirectory()+"/Android/data/com.example.renamefile/phone",folder);
+        Log.d("kiemtra", String.valueOf(file.toURI()));
+        Boolean succes=true;
+        if(!file.exists()){
+            Toast.makeText(this, "davap", Toast.LENGTH_SHORT).show();
+            succes=file.mkdir();
+            return folder;
+        }
+        else{
+            createRandomFolder(BASE_URI);
+        }
+        return null;
+
+    }
+
+
+    public static void moveFile(File BASE_URI,String newfolder, String uri){
+        File file=new File(uri);
+        file.renameTo(new File(Environment.getExternalStorageDirectory()+"/Android/data/com.example.renamefile/phone"+"/"+newfolder,newfolder));
+    }
+
+
 }
