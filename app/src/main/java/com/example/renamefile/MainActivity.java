@@ -201,25 +201,27 @@ public class MainActivity extends AppCompatActivity implements HomeAdapter.CallB
     }
 
     public void createFile() {
-        File folder = new File(Environment.getExternalStorageDirectory() + "/Android/data/com.example.renamefile/phone");
-
+        File folder = new File(getExternalFilesDir(null)+"/phone");
+        Log.e(TAG, "createFile: "+folder.getAbsolutePath() );
         Boolean succes = true;
         if (!folder.exists()) {
             succes = folder.mkdir();
-            BASE_URI = new File(Environment.getExternalStorageDirectory(), "/Android/data/com.example.renamefile/phone");
+            BASE_URI = new File(getExternalFilesDir(null) +"phone");
+
         }
         if (succes) {
             Toast.makeText(this, "ahihi", Toast.LENGTH_SHORT).show();
         }
     }
 
+
     public String createRandomFolder() {
         final double min = 10000000;
         final double max = 1000000000;
         String random = String.valueOf((Math.random() * (max - min + 1) + min));
-        String folder = random.substring(random.lastIndexOf(".") + 1, random.length());
+        String folder = "/phone/" + random.substring(random.lastIndexOf(".") + 1, random.length());
         Log.d("kiemtra", folder);
-        File file = new File(Environment.getExternalStorageDirectory() + "/Android/data/com.example.renamefile/phone", folder);
+        File file = new File(getExternalFilesDir(null), folder);
         Log.d("kiemtra", String.valueOf(file.toURI()));
         Boolean succes = true;
         if (!file.exists()) {
