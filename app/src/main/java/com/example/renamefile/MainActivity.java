@@ -98,11 +98,13 @@ public class MainActivity extends AppCompatActivity implements HomeAdapter.CallB
 //        boolean success = file.renameTo(new File(sd, "Getimage.jpg"));
 
 
-        String newFolder = createRandomFolder();
-        if (newFolder != null && newFolder.length() != 0) {
-            String uri = (sharedPreferences.getString("uri", ""));
-            moveFile(newFolder, uri);
-        }
+//        String newFolder = createRandomFolder();
+//        if (newFolder != null && newFolder.length() != 0) {
+//            String uri = (sharedPreferences.getString("uri", ""));
+//            moveFile(newFolder, uri);
+//        }
+        File file=new File(String.valueOf(getExternalFilesDir(null)));
+        String base=file.toString();
 
 
     }
@@ -173,16 +175,16 @@ public class MainActivity extends AppCompatActivity implements HomeAdapter.CallB
     }
 
     public void insert(String uri){
-        String newFolder = createRandomFolder();
+        String newFolder = createRandomFolder(this);
         images.setNewName(newFolder);
-        String newUri=Environment.getExternalStorageDirectory() + "/Android/data/com.example.renamefile/phone" + "/" + newFolder;
+        String newUri=getExternalFilesDir(null)+"/.phone" + "/" + newFolder;
         images.setNewUri(newUri);
         String oldName=uri.substring(uri.lastIndexOf("/"),uri.length());
         oldName.substring(1);
         images.setOriginalName(oldName);
         String oldUri=uri.substring(0,uri.lastIndexOf("/"));
         images.setOriginalUri(oldUri);
-        moveFile(newFolder,uri);
+        moveFile(newFolder,uri,this);
     }
 
     public void initList(Cursor cursor) {
@@ -201,13 +203,11 @@ public class MainActivity extends AppCompatActivity implements HomeAdapter.CallB
     }
 
     public void createFile() {
-        File folder = new File(getExternalFilesDir(null)+"/phone");
+        File folder = new File(getExternalFilesDir(null)+"/.phone");
         Log.e(TAG, "createFile: "+folder.getAbsolutePath() );
         Boolean succes = true;
         if (!folder.exists()) {
             succes = folder.mkdir();
-            BASE_URI = new File(getExternalFilesDir(null) +"phone");
-
         }
         if (succes) {
             Toast.makeText(this, "ahihi", Toast.LENGTH_SHORT).show();
@@ -215,34 +215,32 @@ public class MainActivity extends AppCompatActivity implements HomeAdapter.CallB
     }
 
 
-    public String createRandomFolder() {
+    public static String createRandomFolder(Context context) {
         final double min = 10000000;
         final double max = 1000000000;
         String random = String.valueOf((Math.random() * (max - min + 1) + min));
-        String folder = "/phone/" + random.substring(random.lastIndexOf(".") + 1, random.length());
-        Log.d("kiemtra", folder);
-        File file = new File(getExternalFilesDir(null), folder);
-        Log.d("kiemtra", String.valueOf(file.toURI()));
+        String folder =random.substring(random.lastIndexOf(".") + 1, random.length());
+        File file = new File(context.getExternalFilesDir(null)+"/.phone", folder);
         Boolean succes = true;
         if (!file.exists()) {
-            Toast.makeText(this, "davap", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "davap", Toast.LENGTH_SHORT).show();
             succes = file.mkdir();
             return folder;
         } else {
-            createRandomFolder();
+            createRandomFolder(context);
         }
         return null;
 
     }
 
-    public static void moveFile(String newfolder, String uri) {
+    public static void moveFile(String newfolder, String uri,Context context) {
         File file = new File(uri);
-        file.renameTo(new File(Environment.getExternalStorageDirectory() + "/Android/data/com.example.renamefile/phone" + "/" + newfolder, newfolder));
+        file.renameTo(new File(context.getExternalFilesDir(null)+"/.phone" + "/" + newfolder, newfolder));
     }
 
-    public static void unMoveFile(Images images){
+    public static void unMoveFile(Images images,Context context){
         File file=new File(images.getNewUri()+"/"+images.getNewName());
-        File sd=Environment.getExternalStorageDirectory();
+        File sd=context.getExternalFilesDir(null);
         String uri=images.getOriginalUri().substring(sd.toString().length());
         file.renameTo(new File(sd+uri,images.getOriginalName()));
     }
@@ -259,7 +257,7 @@ public class MainActivity extends AppCompatActivity implements HomeAdapter.CallB
         initList(database.getData("select * from Images"));
     }
 
-    public void delFolder(Images images){
+    public static void delFolder(Images images){
         File dir = new File(images.getNewUri());
         if (dir.isDirectory())
         {
