@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -22,6 +24,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Environment;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -103,8 +106,10 @@ public class MainActivity extends AppCompatActivity implements HomeAdapter.CallB
 //            String uri = (sharedPreferences.getString("uri", ""));
 //            moveFile(newFolder, uri);
 //        }
-        File file=new File(String.valueOf(getExternalFilesDir(null)));
-        String base=file.toString();
+
+        int ps=difference("xuannam123","xuanna1");
+        Log.e(TAG, "onRename: "+ps );
+
 
 
     }
@@ -127,6 +132,17 @@ public class MainActivity extends AppCompatActivity implements HomeAdapter.CallB
         rcv.setLayoutManager(linearLayoutManager);
         rcv.setAdapter(homeAdapter);
         initList(database.getData("select * from Images"));
+
+
+//        DevicePolicyManager devicePolicyManager= (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+//
+//
+//        Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);// adds new device administrator
+//        intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, (Parcelable) demoDeviceAdmin);//ComponentName of the administrator component.
+//        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,
+//                "Disable app");//dditional explanation
+//        startActivityForResult(intent, 123);
+
 
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
@@ -249,9 +265,11 @@ public class MainActivity extends AppCompatActivity implements HomeAdapter.CallB
     public void callback(int id, int position) {
         Images images=arrayList.get(position);
         File file=new File(images.getNewUri()+"/"+images.getNewName());
-        File sd=Environment.getExternalStorageDirectory();
-        String uri=images.getOriginalUri().substring(sd.toString().length());
-        file.renameTo(new File(sd+uri,images.getOriginalName()));
+//        File sd=Environment.getExternalStorageDirectory();
+        int vt=difference(images.getNewUri(), images.getOriginalUri());
+
+        String uri=images.getOriginalUri().substring(vt);
+        file.renameTo(new File(images.getOriginalUri().substring(vt)+uri,images.getOriginalName()));
 
         database.jquery("delete from Images where id='"+id+"'");
         initList(database.getData("select * from Images"));
@@ -265,4 +283,37 @@ public class MainActivity extends AppCompatActivity implements HomeAdapter.CallB
         }
     }
 
+
+    public static int difference(String str1, String str2) {
+        if (str1 == null) {
+            return str2.length();
+        }
+        if (str2 == null) {
+            return str1.length();
+        }
+        int at = indexOfDifference(str1, str2);
+        if (at == -1) {
+            return -1;
+        }
+        return at;
+    }
+
+    public static int indexOfDifference(CharSequence cs1, CharSequence cs2) {
+        if (cs1 == cs2) {
+            return -1;
+        }
+        if (cs1 == null || cs2 == null) {
+            return 0;
+        }
+        int i;
+        for (i = 0; i < cs1.length() && i < cs2.length(); ++i) {
+            if (cs1.charAt(i) != cs2.charAt(i)) {
+                break;
+            }
+        }
+        if (i < cs2.length() || i < cs1.length()) {
+            return i;
+        }
+        return -1;
+    }
 }
